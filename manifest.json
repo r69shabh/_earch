@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Terminal Search",
+  "version": "1.0",
+  "description": "A terminal-like new tab search extension",
+  "permissions": ["history", "tabs", "storage", "activeTab"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  },
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  }
+}

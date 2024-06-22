@@ -1,0 +1,47 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+  color: #fff;
+  font-family: monospace;
+  font-size: 20px;
+}
+  
+  #terminal {
+    padding: 10px;
+  }
+  
+  #last-login {
+    margin-bottom: 20px;
+  }
+  
+  .prompt {
+    color: #0f0;
+  }
+  
+  #command-input {
+    background: none;
+    border: none;
+    color: #fff;
+    width: calc(100% - 20px);
+    outline: none;
+    font-size: 20px;
+    font-family: monospace;
+  }
+  
+  #history {
+    margin-bottom: 10px;
+  }
+
+  .dollar-command {
+    color: #FF0000; /* Change this to the color you want */
+  }
+
+  #date-time {
+    font-size: 30px;
+    font-family: 'Digital-7 Mono', Arial, sans-serif;
+    color: #FF0000;
+    background-color: #000;
+    padding: 10px;
+    border-radius: 5px;
+  }
