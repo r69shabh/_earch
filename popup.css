@@ -2,8 +2,8 @@ body {
   margin: 0;
   padding: 0;
   background-color: #000;
-  color: #fff;
-  font-family: monospace;
+  color: #0F0; /* Changed to green for better contrast */
+  font-family: 'Menlo', 'Consolas', 'Liberation Mono', 'Courier New', monospace; /* Updated font stack */
   font-size: 20px;
   display: flex;
   flex-direction: column;
@@ -11,35 +11,70 @@ body {
 }
 
 #terminal {
-  padding: 10px;
+  padding: 15px; /* Increased padding */
   flex: 1;
   overflow-y: auto;
 }
 
+/* Scrollbar styling */
+#terminal::-webkit-scrollbar {
+  width: 8px;
+}
+#terminal::-webkit-scrollbar-track {
+  background: #222;
+}
+#terminal::-webkit-scrollbar-thumb {
+  background: #555;
+}
+#terminal::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
 #last-login {
-  margin-bottom: 20px;
+  margin-bottom: 15px; /* Adjusted margin */
 }
 
 .prompt {
-  color: #0f0;
+  color: #0F0; /* Ensured prompt is green */
 }
 
 #command-input {
   background: none;
   border: none;
-  color: #fff;
+  color: #FFF; /* Changed to white for command input */
   width: calc(100% - 20px);
   outline: none;
   font-size: 20px;
-  font-family: monospace;
+  font-family: 'Menlo', 'Consolas', 'Liberation Mono', 'Courier New', monospace; /* Updated font stack */
+  animation: blink-caret 1s step-end infinite; /* Blinking cursor animation */
+}
+
+/* Keyframes for blinking cursor */
+@keyframes blink-caret {
+  from, to {
+    border-color: transparent;
+  }
+  50% {
+    border-right: 2px solid #0F0; /* Cursor color */
+  }
 }
 
 #history {
-  margin-bottom: 10px;
+  margin-bottom: 15px; /* Adjusted margin */
+}
+
+#history .timestamp { /* Styling for timestamp in history */
+  color: #888; /* Dimmer color for timestamp */
+}
+
+#current-line { /* Added styling for current line, assuming it's a container for prompt and input */
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px; /* Adjusted margin */
 }
 
 .dollar-command {
-  color: #FF0000; /* Change this to the color you want */
+  color: #FF0000; 
 }
 
 #info-panel {
@@ -47,7 +82,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #000;
+  background-color: #000; /* Ensured background is black */
   padding: 10px;
 }
 
