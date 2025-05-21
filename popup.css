@@ -41,6 +41,8 @@ body {
 #command-input {
   background: none;
   border: none;
+  /* Provide the border that will be toggled by the blink-caret animation */
+  border-right: 2px solid transparent;
   color: #FFF; /* Changed to white for command input */
   width: calc(100% - 20px);
   outline: none;

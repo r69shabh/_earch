@@ -95,20 +95,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!engineName) { // User typed just "$engine"
       chrome.storage.local.get(['customEngines', 'searchEngine'], function(result) {
-        let output = '<span class="dollar-command">Available search engines:</span><br>';
-        output += '--------------------------<br>';
-        for (const name in predefinedEngines) {
-          output += `${name}${name === searchEngine || predefinedEngines[name] === result.searchEngine ? ' (current)' : ''}<br>`;
+      const current = result.searchEngine || searchEngine;
+      let output = '<span class="dollar-command">Available search engines:</span><br>';
+      output += '--------------------------<br>';
+      for (const name in predefinedEngines) {
+        output += `${name}${predefinedEngines[name] === current ? ' (current)' : ''}<br>`;
+      }
+      if (result.customEngines) {
+        for (const name in result.customEngines) {
+        output += `${name}${result.customEngines[name] === current ? ' (current)' : ''}<br>`;
         }
-        if (result.customEngines) {
-          for (const name in result.customEngines) {
-            output += `${name}${result.customEngines[name] === result.searchEngine ? ' (current)' : ''}<br>`;
-          }
-        }
-        output += '--------------------------<br>';
-        output += 'To switch, type: <span class="prompt">$engine &lt;name&gt;</span> (e.g., <span class="dollar-command">$engine google</span>)<br>';
-        output += 'Or simply type the engine name directly (e.g., <span class="dollar-command">google</span>).';
-        addHistoryItem(output, true);
+      }
+      output += '--------------------------<br>';
+      output += 'To switch, type: <span class="prompt">$engine &lt;name&gt;</span> (e.g., <span class="dollar-command">$engine google</span>)<br>';
+      output += 'Or simply type the engine name directly (e.g., <span class="dollar-command">google</span>).';
+      addHistoryItem(output, true);
       });
       return;
     }
@@ -296,13 +297,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Store command in Chrome storage (excluding $engine add steps and empty commands)
     if (addEngineStep === 0 && commandString.trim() !== '') {
-        chrome.storage.local.get(['commandHistory'], function(result) {
-            const commandHistory = result.commandHistory || [];
-            if (commandHistory.length === 0 || commandHistory[commandHistory.length - 1] !== commandString) {
-                 commandHistory.push(commandString);
-            }
-            chrome.storage.local.set({commandHistory: commandHistory});
-        });
+      chrome.storage.local.get(['commandHistory'], function(result) {
+        let commandHistory = result.commandHistory || [];
+        if (commandHistory.length === 0 || commandHistory[commandHistory.length - 1] !== commandString) {
+          commandHistory.push(commandString);
+        }
+        // Keep only the last 500 entries to prevent unbounded growth
+        if (commandHistory.length > 500) {
+          commandHistory = commandHistory.slice(-500);
+        }
+        chrome.storage.local.set({commandHistory: commandHistory});
+      });
     }
 
     if (addEngineStep === 1) { 
@@ -366,23 +371,47 @@ document.addEventListener('DOMContentLoaded', function() {
     if (systemMessageKeywords.some(keyword => text.startsWith(keyword))) {
         itemClass = 'dollar-command'; 
     }
-    
+
     if (isPreformatted) {
-        itemElement.innerHTML = text; // Text is already HTML formatted
+      // Sanitize HTML using DOMPurify if available, otherwise fallback to textContent
+      if (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function') {
+        itemElement.innerHTML = window.DOMPurify.sanitize(text);
+      } else {
+        // Fallback: treat as plain text if DOMPurify is not available
+        itemElement.textContent = text;
+      }
     } else {
-        // Sanitize text to prevent accidental HTML injection if not preformatted
-        const sanitizedText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        itemElement.innerHTML = `<span class="prompt">➜</span> <span class="${itemClass}">${sanitizedText}</span> <span class="timestamp">[${timestamp}]</span>`;
+      // Sanitize text to prevent accidental HTML injection if not preformatted
+      const sanitizedText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const promptSpan = document.createElement('span');
+      promptSpan.className = 'prompt';
+      promptSpan.textContent = '➜';
+
+      const textSpan = document.createElement('span');
+      if (itemClass) textSpan.className = itemClass;
+      textSpan.textContent = sanitizedText;
+
+      const timestampSpan = document.createElement('span');
+      timestampSpan.className = 'timestamp';
+      timestampSpan.textContent = `[${timestamp}]`;
+
+      itemElement.appendChild(promptSpan);
+      itemElement.appendChild(document.createTextNode(' '));
+      itemElement.appendChild(textSpan);
+      itemElement.appendChild(document.createTextNode(' '));
+      itemElement.appendChild(timestampSpan);
     }
-    
+
     historyDiv.appendChild(itemElement);
     historyDiv.scrollTop = historyDiv.scrollHeight; // Auto-scroll to bottom
-}
+  }
 
   function executeSearch(query, newTab = false) {
     chrome.storage.local.get('searchEngine', function(data) {
       const currentSearchEngine = data.searchEngine || 'https://www.google.com/search?q='; // Fallback to Google
-      const searchUrl = `${currentSearchEngine}${encodeURIComponent(query)}`;
+      const searchUrl = currentSearchEngine.includes('%s')
+        ? currentSearchEngine.replace('%s', encodeURIComponent(query))
+        : `${currentSearchEngine}${encodeURIComponent(query)}`;
       if (newTab) {
         chrome.tabs.create({ url: searchUrl });
       } else {
